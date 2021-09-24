@@ -94,7 +94,7 @@ func creteMetadataJson(in []args) {
 		fmt.Println("Error", err)
 		return
 	}
-	err = ioutil.WriteFile(path.Join(in[filePath].value, in[metadataFileName].value ), output))
+	err = ioutil.WriteFile(path.Join(in[filePath].value, in[metadataFileName].value ), output, 0644)
 	if err != nil {
 		actions.Fatalf("Failed writing data into metadata.json file. Error: %v\n", err)
 		return
