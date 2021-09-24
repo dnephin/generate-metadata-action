@@ -15,7 +15,7 @@ jobs:
           uses: actions/checkout@v2
         - name: Generate metadata file
           id: generate_metadata
-          uses: HashiCorp-RelEng-Dev/generate-metadata-action@main
+          uses: 99/generate-metadata-action@main
           with:
             repository: ${{ github.event.repository.name }}
             filePath: "."
