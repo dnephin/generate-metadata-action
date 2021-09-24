@@ -1,0 +1,28 @@
+name: My Action
+description: Run tests
+inputs:
+  repository:
+    description: 'Repository name'
+    required: true
+  filePath:
+    description: "Path to safe the metadata.json file"
+    required: false
+  org:
+    description: 'Repository name. Default `hashicorp`'
+    required: true
+  command_get_version:
+    description: 'Repository name. Default `hashicorp`'
+    required: true
+
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.repository }}
+    - ${{ inputs.repositoryOwner }}
+    - ${{ inputs.versionCommand }}
+    - ${{ inputs.filePath }}
+
+outputs:
+  filepath:
+    description: 'The metadata.json file path'
