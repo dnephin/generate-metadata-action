@@ -20,7 +20,7 @@ jobs:
             repository: ${{ github.event.repository.name }}
             filePath: "."
             versionCommand: "make version"
-            filename: "metadata.json"
+            metadataFileName: "metadata.json"
 
         - name: Print metadata.json file location
           run:  echo "The metadata.json was created in the ${{ steps.generate_metadata.outputs.filepath }}"

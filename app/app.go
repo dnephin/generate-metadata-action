@@ -24,7 +24,7 @@ const (
 	repositoryOwner = iota
 	versionCommand  = iota
 	filePath = iota
-	metadataJsonFile = iota
+	metadataFileName = iota
 )
 
 type Metadata struct {
@@ -51,7 +51,7 @@ func main() {
 			name: "filePath",
 		},
 		args{
-			name: "metadataJsonFile",
+			name: "metadataFileName",
 		},
 	}
 	for i := range in {
@@ -94,7 +94,7 @@ func creteMetadataJson(in []args) {
 		fmt.Println("Error", err)
 		return
 	}
-	err = ioutil.WriteFile(path.Join(in[filePath].value), output))
+	err = ioutil.WriteFile(path.Join(in[filePath].value, in[metadataFileName].value ), output))
 	if err != nil {
 		actions.Fatalf("Failed writing data into metadata.json file. Error: %v\n", err)
 		return
