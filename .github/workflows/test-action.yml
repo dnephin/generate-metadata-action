@@ -30,5 +30,4 @@ jobs:
         - uses: actions/upload-artifact@v2
           with:
             name: metadata.json
-            path:
-          path: ${{ steps.generate_metadata.outputs.filepath }}
+            path: ${{ steps.generate_metadata.outputs.filepath }}
