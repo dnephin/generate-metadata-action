@@ -1,0 +1,12 @@
+on:
+  push:
+    tags:
+      - "v*"
+
+name: Release generate metadata action
+jobs:
+  release:
+    name: Release GitHub Action
+    runs-on: ubuntu-latest
+    steps:
+      - uses: technote-space/release-github-actions@v6
