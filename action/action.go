@@ -132,6 +132,8 @@ func getSha() string {
 	sha := execCommand("git", "rev-parse", "HEAD")
 	if len(sha) == 0 {
 		actions.Fatalf("Failed to determine git sha for this commit")
+	} else {
+		sha = sha[0 : len(sha)-1]
 	}
 	return sha
 }
@@ -139,7 +141,6 @@ func getSha() string {
 func getVersion(command string) string {
 	version := execCommand(strings.Fields(command)...)
 	if version == "" {
-		//sha = os.Getenv("GITHUB_SHA")
 		actions.Fatalf("Failed to setup version using %v command", command)
 	}
 	return strings.TrimSuffix(version, "\n")
