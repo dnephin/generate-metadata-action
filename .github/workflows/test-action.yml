@@ -10,7 +10,7 @@ jobs:
   action-run:
     runs-on: ubuntu-latest
     outputs:
-      filepath: ${{ steps.generate-metadata-file.outputs.filepath }}
+      filepath: ${{ steps.action-run.outputs.filepath }}
     steps:
         - name: 'Checkout directory'
           uses: actions/checkout@v2
