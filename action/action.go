@@ -3,17 +3,16 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	actions "github.com/sethvargo/go-githubactions"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"strings"
 )
 
 var defaultRepositoryOwner string = "hashicorp"
+var defaultMetadataFileName string = "metadata.json"
 
 type args struct {
 	name  string
@@ -21,11 +20,11 @@ type args struct {
 }
 
 const (
-	repository      = iota
-	repositoryOwner = iota
-	versionCommand  = iota
-	filePath = iota
+	repository       = iota
+	repositoryOwner  = iota
+	filePath         = iota
 	metadataFileName = iota
+	version          = iota
 )
 
 type Metadata struct {
@@ -46,43 +45,48 @@ func main() {
 			name: "repositoryOwner",
 		},
 		args{
-			name: "versionCommand",
-		},
-		args{
 			name: "filePath",
 		},
 		args{
 			name: "metadataFileName",
 		},
+		args{
+			name: "version",
+		},
 	}
 	for i := range in {
 		getInputsValue(&in[i].value, in[i].name)
 	}
+	generatedFile := creteMetadataJson(in)
 
-	creteMetadataJson(in)
-	f := path.Join(in[filePath].value, in[metadataFileName].value)
-	if checkFileIsExist(f) {
-		actions.SetOutput("output", f)
+	if checkFileIsExist(generatedFile) {
+		actions.SetOutput("filepath", generatedFile)
+		actions.SetEnv("filepath", generatedFile)
+		actions.Infof("Successfully created %v file\n", generatedFile)
 	} else {
-		actions.Infof("File " + in[filePath].value + " does not exist")
+		actions.Fatalf("File %v does not exist", generatedFile)
 	}
-
 }
 
 func checkFileIsExist(filepath string) bool {
-	fileinfo, err := os.Stat(filepath)
+	fileInfo, err := os.Stat(filepath)
 
 	if os.IsNotExist(err) {
 		return false
 	}
-	// Return false if the fileinfo says the file path is a directory.
-	return !fileinfo.IsDir()
+	// Return false if the fileInfo says the file path is a directory.
+	return !fileInfo.IsDir()
 }
 
-func creteMetadataJson(in []args) {
-	sha := getSha()
-	actions.Infof("Working sha %s\n", sha)
+func creteMetadataJson(in []args) string {
+	file := in[metadataFileName].value
+	if file == "" {
+		file = defaultMetadataFileName
+	}
+	filePath := path.Join(in[filePath].value, file)
 
+	sha := getSha()
+	actions.Infof("Working sha %v\n", sha)
 	repository := in[repository].value
 
 	org := in[repositoryOwner].value
@@ -95,9 +99,15 @@ func creteMetadataJson(in []args) {
 		actions.Fatalf("GITHUB_RUN_ID is empty")
 	}
 
-	version := getVersion(in[versionCommand].value)
+	version := in[version].value
+	if version == "" {
+		actions.Fatalf("The version or version command is not provided")
+	} else if strings.Contains(version, " ") {
+		version = getVersion(version)
+	}
+	actions.Infof("Working version %v\n", version)
 
-	actions.Infof("Creating metadata.json file")
+	actions.Infof("Creating metadata file in %v\n", filePath)
 	m := &Metadata{
 		Product:         repository,
 		Org:             org,
@@ -106,39 +116,33 @@ func creteMetadataJson(in []args) {
 		Version:         version}
 	output, err := json.MarshalIndent(m, "", "\t\t")
 	if err != nil {
-		fmt.Println("Error", err)
-		return
-	}
-	err = ioutil.WriteFile(path.Join(in[filePath].value, in[metadataFileName].value ), output, 0644)
-	if err != nil {
-		actions.Fatalf("Failed writing data into metadata.json file. Error: %v\n", err)
-		return
-	}
+		actions.Fatalf("JSON marshal failure. Error:%v\n", output, err)
 
-	actions.Infof("Successfully created metadata.json file")
-
+	} else {
+		err = ioutil.WriteFile(filePath, output, 0644)
+		if err != nil {
+			actions.Fatalf("Failed writing data into %v file. Error: %v\n", in[metadataFileName].value, err)
+		}
+	}
+	return filePath
 }
 
 func getSha() string {
 	// git rev-parse HEAD
 	sha := execCommand("git", "rev-parse", "HEAD")
 	if len(sha) == 0 {
-		actions.Fatalf("Unable to determine git sha for this commit")
-	} else {
-		sha = sha[0 : len(sha)-1]
+		actions.Fatalf("Failed to determine git sha for this commit")
 	}
-
 	return sha
 }
 
 func getVersion(command string) string {
-	version := strings.TrimSuffix(execCommand(string(command[0]), command[1:]), "\n")
-	actions.Infof("Running %v version\n", version)
+	version := execCommand(strings.Fields(command)...)
 	if version == "" {
 		//sha = os.Getenv("GITHUB_SHA")
-		actions.Fatalf("Failed to setup version using `make version` command")
+		actions.Fatalf("Failed to setup version using %v command", command)
 	}
-	return version
+	return strings.TrimSuffix(version, "\n")
 }
 
 func execCommand(args ...string) string {
@@ -156,13 +160,9 @@ func execCommand(args ...string) string {
 	if err != nil {
 		actions.Fatalf("Failed to run %v command %v: %v", name, cmd, err)
 	}
-
 	return string(stdout.Bytes())
 }
 
 func getInputsValue(val *string, key string) {
 	*val = actions.GetInput(key)
 }
-
-
-

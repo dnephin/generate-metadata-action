@@ -1,4 +1,4 @@
-module github.com/99/test-action
+module github.com/99/generate-metadata-action
 
 go 1.16
 

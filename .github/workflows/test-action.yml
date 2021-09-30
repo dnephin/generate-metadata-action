@@ -10,7 +10,6 @@ jobs:
   action-run:
     runs-on: ubuntu-latest
     steps:
-
         - name: 'Checkout directory'
           uses: actions/checkout@v2
         - name: Generate metadata file
@@ -18,12 +17,12 @@ jobs:
           uses: 99/generate-metadata-action@main
           with:
             repository: ${{ github.event.repository.name }}
-            filePath: "."
-            versionCommand: "make version"
-            metadataFileName: "metadata.json"
+            version: make version
 
-        - name: Print metadata.json file location
-          run:  echo "The metadata.json was created in the ${{ steps.generate_metadata.outputs.filepath }}"
+        - name: Set env metadata.json file location
+          run:  |
+            echo "$filepath"
+            ls -lah
 
         - uses: actions/upload-artifact@v2
           with:

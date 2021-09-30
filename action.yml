@@ -1,28 +1,31 @@
-name: My Action
-description: Run tests
+name: generate-metadata action
+description: This action creates JSON file containing metadata information
 inputs:
-  repository:
-    description: 'Repository name'
-    required: true
   filePath:
-    description: "Path to safe the metadata.json file"
+    description: 'A file path that denotes the location of the `metadataFileName` to be created. Default set to default github action root path'
     required: false
-  org:
-    description: 'Repository name. Default `hashicorp`'
+  metadataFileName:
+    description: 'The name of the JSON file produced by the action. The generated file will have a JSON format. Default set to "metadata.json"'
+    required: false
+  repository:
+    description: 'The repository name for collecting the metadata'
     required: true
-  command_get_version:
-    description: 'Repository name. Default `hashicorp`'
+  repositoryOwner:
+    description: 'The repository owner (organization or user). Default is set to "hashicorp" organization'
+    required: false
+  version:
+    description: 'Version or version command (e.g: make version)'
     required: true
 
 runs:
   using: docker
   image: Dockerfile
   args:
-    - ${{ inputs.repository }}
-    - ${{ inputs.repositoryOwner }}
-    - ${{ inputs.versionCommand }}
     - ${{ inputs.filePath }}
     - ${{ inputs.metadataFileName }}
+    - ${{ inputs.repository }}
+    - ${{ inputs.repositoryOwner }}
+    - ${{ inputs.version }}
 
 outputs:
   filepath:
