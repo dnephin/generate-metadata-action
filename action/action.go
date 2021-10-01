@@ -57,7 +57,7 @@ func main() {
 	for i := range in {
 		getInputsValue(&in[i].value, in[i].name)
 	}
-	generatedFile := creteMetadataJson(in)
+	generatedFile := createMetadataJson(in)
 
 	if checkFileIsExist(generatedFile) {
 		actions.SetOutput("filepath", generatedFile)
@@ -78,7 +78,7 @@ func checkFileIsExist(filepath string) bool {
 	return !fileInfo.IsDir()
 }
 
-func creteMetadataJson(in []args) string {
+func createMetadataJson(in []args) string {
 	file := in[metadataFileName].value
 	if file == "" {
 		file = defaultMetadataFileName
